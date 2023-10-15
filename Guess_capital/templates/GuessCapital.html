@@ -1,0 +1,109 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Add Vue.js and Axios CDNs -->
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.1.2/axios.js" integrity="sha512-alPPV0FSr6mYlSRf3QgbZmEqL7o99K5e30hGX+FrqDwMhnTngIeshurUAuKFDG28IzPSCSWTwmEfN0wBjg19KQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <!-- Add style.css file -->
+    <link
+      rel="stylesheet" href="{% static 'css/style.css' %}" />
+
+    <title>Guess Capital</title>
+  </head>
+  <body>
+    <div class="text-center container" id="vue-app">
+        <h1 class="text-primary mt-5">Hey Sam!</h1>
+        <h2 class="mt-5">Guess the country's capital</h2>
+        <div v-if="randomIndex">
+            <h4 class="text-primary text-center mt-5">[[randomIndex.name]]</h4>
+            <form @submit.prevent="checkCapital">
+                <div class="form-group mt-4">
+                <input type="text" class="form-control" v-model="capital" name="capital" placeholder="Enter capital" @input="removeMsg">
+                <span class="text-danger" v-show="validation">Please enter capital</span>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3">Submit</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+
+    <!-- Initiating vue app -->
+    <script>
+        const app = new Vue({
+            el: "#vue-app",
+            delimiters: ['[[', ']]'],
+            data() {
+              return {
+                randomIndex: null,
+                apiData: null,
+                capital: null,
+                validation: false
+              };
+            },
+            mounted(){
+                this.getData()
+            },
+            methods: {
+              getData(){
+                const apiUrl = 'https://countriesnow.space/api/v0.1/countries/capital';
+
+                // Make a GET request to the API using Axios
+                axios.get(apiUrl)
+                    .then(response => {
+                        // Handle the successful response
+                        this.apiData = response.data;
+                        
+                        // Pick a random country from the response
+                        const random = Math.floor(Math.random() * this.apiData.data.length);
+                        this.randomIndex = this.apiData.data[random];
+                    })
+                    .catch(error => {
+                        // Handle the error
+                        console.error('Error:', error);
+                        this.randomIndex = 'Please try again after some time';
+                    });
+
+              },
+              // Check the entered capital is correct or not
+              checkCapital(){
+                if(this.capital){
+                    if(this.randomIndex.capital.toLowerCase() == this.capital.toLowerCase()){
+                        alert("Hurray, you have guess it correctly")
+                        this.getData()
+                        this.capital = null
+                    }
+                    else{
+                        alert("Oops, Wrong capital, the correct capital is " + this.randomIndex.capital)
+                        this.getData()
+                        this.capital = null
+                    }
+                }
+                else{
+                    this.validation = true
+                }
+                
+              },
+              removeMsg(){
+                this.validation = false
+              }
+             
+            }
+          });
+          
+      </script>
+  </body>
+</html>
